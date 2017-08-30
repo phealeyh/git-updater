@@ -1,0 +1,179 @@
+#!/bin/bash
+
+########################################
+#----------------checkFile-------------#
+########################################
+#Usage: $1, This function will check if the file named as fileName actualy exists,if it doesn't then it will exit the program. If a file has been found then return the file. It is a good idea to change the "fileName" variable if you want a seperate target destination
+
+checkFile()
+{
+	#change the fileName variable to search for something else
+	local fileName=$(find ~ -name ".git-directories")
+	if [ ! -f "$fileName" ] ; then
+		exit 1
+	else
+		echo "$fileName"
+	fi
+}
+
+#########################
+#	updateRepo	          #
+#########################
+#Usage: $1=$directory, this function will cd into the given directory and then update the repository from the master branch
+
+updateRepo()
+{
+	cd $directory
+	git fetch upstream
+	echo "Finished fetch of upstream"
+	git checkout master
+	echo "Finished checkout of master"
+	git rebase upstream/master
+	echo "Finished rebase upstream/master"
+	echo "The directory "$directory" has been updated" 
+	echo ""
+}
+
+pullRepo()
+{
+  cd $directory 
+  git pull origin master
+}
+
+#########################
+#	getInput	            #
+#########################
+#Usage: This will keep looping until the user puts in a non-zero length string and will then finally return that string
+
+getInput()
+{
+	local line=""
+	while [ -z "$line" ]
+	do
+		read line
+	done 
+	echo $line
+}
+
+########################################
+#------------loadContents--------------#
+########################################
+#Usage: $1, the first argument will usually be a file given as an argument and then it will load each line into the global array
+
+loadContents()
+{
+	#this will allow us to read the lines given in a file
+	while IFS= read line
+	do
+		array+=("$line")
+	done < "$file"
+}
+
+#########################
+#	printArray	#
+#########################
+#Usage: This will print the array's contents by looping through the array's elements and will print out the index and the element.
+
+printArray()
+{
+	
+	for i in ${!array[*]};
+	do
+		echo "$i": "${array[$i]}"
+	done
+	
+}
+
+##################################
+#---------------getIndex---------#
+##################################
+#Usage: This will allow us to get an input between 0 and the size of the array - 1. It will keep looping until you give a number within that range
+
+getIndex()
+{
+		
+	while [ 1 ]
+	do
+		echo "Please select a number between: 0 and ""$((${#array[*]} - 1))"	
+		local input=$(getInput)
+		if [ "$input" -lt "${#array[*]}" ] ; then
+			directory="${array[$input]}"
+			break;
+		fi
+	done
+		
+}
+
+########################################
+#-----------commitAndPush--------------#
+########################################
+#Usage: $1, The first argument should be used to tell the user about their current directory. This function will allow us to commit and push the user-selected repositories
+
+commitAndPush()
+{
+	echo "Please enter a file within the directory of "$directory""
+	git add $(retrieveFileFromDirectory)
+	echo "Enter a commit message:"
+	git commit -m "$(getInput)"
+	echo "Now pushing the repo"
+	git push origin master
+	
+}
+
+########################################
+#----------------checkFile-------------#
+########################################
+#Usage: $1, This function will check if the file named as fileName actualy exists,if it doesn't then it will exit the program. If a file has been found then return the file. It is a good idea to change the "fileName" variable if you want a seperate target destination
+
+checkFile()
+{
+	#change the fileName variable to search for something else
+	local fileName=$(find ~ -name ".git-directories")
+	if [ ! -f "$fileName" ] ; then
+		exit 1
+	else
+		echo "$fileName"
+	fi
+}
+
+
+########################################
+#---------------updateAllRepos---------#
+########################################
+#Usage: This will alllow you to update all repos based on the array. The while loop will disinclude the first element as it is not a directory
+
+updateAllRepos()
+{
+	local size="${#array[*]}"
+  #we want the first element of the array which is an actual directory
+	local x=1
+	while [ $x -lt $size ];
+	do
+		local directory="${array[$x]}"
+		cd $directory
+    pullRepo $directory
+		#updateRepo $directory
+		x=$((x+1))
+	done	
+}
+
+main()
+{
+	local file=$1
+	loadContents "$file"	
+	printArray
+	local directory=""
+	getIndex $directory
+	echo ""$directory" has been selected"
+	if [ "$directory" = "all" ] ; then
+		echo "all selected"
+		updateAllRepos
+	else #dealing with one repo
+		cd $directory
+		pullRepo $directory
+	fi
+	
+}
+
+array=("all")
+main $(checkFile)
