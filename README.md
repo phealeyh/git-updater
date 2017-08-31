@@ -8,4 +8,4 @@ To properly use this program, create a hidden file called '.git-directories'. In
 /path/to/directory/second
 
 # Running the script
-When you run the script, an array is loaded based on the file holding the directories and a prompt asks you to select which folder you want updated. All selections are number based and a response must be an integer.
+When you run the script, an array is loaded based on the file holding the directories and a prompt asks you to select which folder you want updated. All selections are number based and a response must be an integer. Once a directory (or all of the directories) are chosen, then the script will go into each directory and update the git repository.
