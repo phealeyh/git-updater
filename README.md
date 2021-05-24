@@ -2,7 +2,7 @@
 This script will update all of your git repos. The script will use an external file called .git-directories which will hold the full path directories
 
 # Usage
-To properly use this program, create a hidden file called '.git-directories'. In this file will include the full path directories to each github repo. Please make sure each directory is seperated by a new line when inserting new ones.
+To properly use this program, create a hidden file called '.git-directories' in your home directory. In this file will include the full path directories to each github repo. Please make sure each directory is seperated by a new line when inserting new ones.
 
 /path/to/directory/first
 
